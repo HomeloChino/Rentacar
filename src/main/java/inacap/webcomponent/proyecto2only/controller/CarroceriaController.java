@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import inacap.webcomponent.proyecto2only.model.CarroceriaModel;
 import org.springframework.http.HttpStatus;
+import inacap.webcomponent.proyecto2only.repository.CarroceriaRepository;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -26,41 +29,63 @@ import org.springframework.http.HttpStatus;
 @RequestMapping("/carroceria")
 public class CarroceriaController {
     
-  @GetMapping()
-    public List<CarroceriaModel> list() {
-        return CarroceriaModel.carrocerias;
+    @Autowired
+    private CarroceriaRepository carroceriaRepository;
+    
+   @GetMapping()
+    public Iterable<CarroceriaModel> list() {
+        return carroceriaRepository.findAll();
     }
     
     @GetMapping("/{id}")
-    public CarroceriaModel get(@PathVariable String id) {
-        CarroceriaModel carroceria = new CarroceriaModel();
-        return carroceria.buscaCarroceria(Integer.parseInt(id));
+    public ResponseEntity<CarroceriaModel> get(@PathVariable String id) {
+        Optional<CarroceriaModel> cOptional = carroceriaRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            CarroceriaModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
     }
     
    @PutMapping("/{id}")
     public ResponseEntity<CarroceriaModel> put(@PathVariable String id, @RequestBody CarroceriaModel carroceriaEditar) {
-        CarroceriaModel carroceria = new CarroceriaModel();
-        return new ResponseEntity<>(carroceria.editarCarroceria(Integer.parseInt(id), carroceriaEditar), HttpStatus.OK);
+         Optional<CarroceriaModel> cOptional = carroceriaRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            CarroceriaModel cEncontrado = cOptional.get();
+            carroceriaEditar.setIdCarroceria(cEncontrado.getIdCarroceria());
+            carroceriaRepository.save(carroceriaEditar);
+            return new ResponseEntity<>(carroceriaEditar, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+        }
     }
     
-    @PostMapping
+     @PostMapping
     public ResponseEntity<?> post(@RequestBody CarroceriaModel nuevaCarroceria) {
-        CarroceriaModel carroceria = new CarroceriaModel();
-        if (carroceria.nuevaCarroceria(nuevaCarroceria)){
-             return new ResponseEntity<>(HttpStatus.CREATED);
+       
+       nuevaCarroceria = carroceriaRepository.save(nuevaCarroceria);
+       Optional<CarroceriaModel> cOptional = carroceriaRepository.findById(nuevaCarroceria.getIdCarroceria());
+        if (cOptional.isPresent()){
+            CarroceriaModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
         }else{
-             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
        
     }
     
-     @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        CarroceriaModel carroceria = new CarroceriaModel();
-        if (carroceria.eliminarCarroceria(Integer.parseInt(id))){
-        return new ResponseEntity<>(HttpStatus.OK);
-    }else{
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        Optional<CarroceriaModel> cOptional = carroceriaRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            CarroceriaModel cEncontrado = cOptional.get();
+            
+            carroceriaRepository.deleteById(cEncontrado.getIdCarroceria());
+            
+            return new ResponseEntity<>(cEncontrado, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         
     }

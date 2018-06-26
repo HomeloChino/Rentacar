@@ -1,17 +1,21 @@
 
 package inacap.webcomponent.proyecto2only.model;
 
-import java.util.ArrayList;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-
+@Entity
+@Table(name = "mediopagos")
 public class MedioPagoModel {
-    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idMedioPago;
     private String nombreMedioPago;
     private String detalle;
     
-    public static ArrayList<MedioPagoModel> pagos = new ArrayList<>();
-
     public int getIdMedioPago() {
         return idMedioPago;
     }
@@ -48,57 +52,5 @@ public class MedioPagoModel {
         this.idMedioPago = idMedioPago;
         this.nombreMedioPago = nombreMedioPago;
         this.detalle = detalle;
-    }
-    
-      public boolean nuevoPago(MedioPagoModel nuevoPago){
-        int id = 0;
-        if(!pagos.isEmpty()){
-            for (MedioPagoModel pago: pagos ){
-                if (pago.getIdMedioPago()> id){
-                    id = pago.getIdMedioPago();
-                }
-            }
-        }
-        id++;
-        pagos.add(new MedioPagoModel(id,nuevoPago.getNombreMedioPago(),nuevoPago.getDetalle() ));
-        return true;
-    }
-        public MedioPagoModel buscaPago(int idPagoBuscado){
-        MedioPagoModel pagoEncontrado = null;
-        if(!pagos.isEmpty()){
-            for (MedioPagoModel pago : pagos){
-                if(pago.getIdMedioPago()== idPagoBuscado){
-                   pagoEncontrado = pago; 
-                }
-            }
-        }
-        return pagoEncontrado;
-    }
-        public MedioPagoModel editarPago(int idPago, MedioPagoModel pagoEditar){
-         MedioPagoModel pagoEditado = null;
-        if(!pagos.isEmpty()){
-            for (MedioPagoModel pago : pagos){
-                if(pago.getIdMedioPago()== idPago){
-                   pago.setNombreMedioPago(pagoEditar.getNombreMedioPago());
-                   pago.setDetalle(pagoEditar.getDetalle());
-                   pagoEditado = pago;
-                }
-            }
-        }
-        return pagoEditado;
-    }
- public boolean eliminarPago(int id){
-      MedioPagoModel pagoEliminado = null;
-        if(!pagos.isEmpty()){
-            for (MedioPagoModel pago : pagos){
-                if(pago.getIdMedioPago()== idMedioPago){
-                   pagoEliminado = pago;
-                }
-            }
-        }  
-        
-        pagos.remove(pagoEliminado);
-        
-        return true;
     }
 }

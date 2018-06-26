@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import inacap.webcomponent.proyecto2only.model.TipoVehiculoModel;
 import org.springframework.http.HttpStatus;
+import inacap.webcomponent.proyecto2only.repository.TipoVehiculoRepository;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -26,43 +29,66 @@ import org.springframework.http.HttpStatus;
 @RequestMapping("/tipo")
 public class TipoVehiculoController {
     
-   @GetMapping()
-    public List<TipoVehiculoModel> list() {
-        return TipoVehiculoModel.tipos;
+    @Autowired
+    private TipoVehiculoRepository tipovehiculoRepository;
+    
+  @GetMapping()
+    public Iterable<TipoVehiculoModel> list() {
+        return tipovehiculoRepository.findAll();
     }
     
    @GetMapping("/{id}")
-    public TipoVehiculoModel get(@PathVariable String id) {
-        TipoVehiculoModel tipo = new TipoVehiculoModel();
-        return tipo.buscaTipo(Integer.parseInt(id));
+    public ResponseEntity<TipoVehiculoModel> get(@PathVariable String id) {
+        Optional<TipoVehiculoModel> cOptional = tipovehiculoRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            TipoVehiculoModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
     }
     
      @PutMapping("/{id}")
-    public ResponseEntity<TipoVehiculoModel> put(@PathVariable String id, @RequestBody TipoVehiculoModel tipoEditar) {
-        TipoVehiculoModel tipo = new TipoVehiculoModel();
-        return new ResponseEntity<>(tipo.editarTipo(Integer.parseInt(id), tipoEditar), HttpStatus.OK);
+    public ResponseEntity<TipoVehiculoModel> put(@PathVariable String id, @RequestBody TipoVehiculoModel tipovehiculoEditar) {
+         Optional<TipoVehiculoModel> cOptional = tipovehiculoRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            TipoVehiculoModel cEncontrado = cOptional.get();
+            tipovehiculoEditar.setIdTipoVehiculo(cEncontrado.getIdTipoVehiculo());
+            tipovehiculoRepository.save(tipovehiculoEditar);
+            return new ResponseEntity<>(tipovehiculoEditar, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+        }
     }
     
-     @PostMapping
-    public ResponseEntity<?> post(@RequestBody TipoVehiculoModel nuevoTipo) {
-        TipoVehiculoModel tipo = new TipoVehiculoModel();
-        if (tipo.nuevoTipo(nuevoTipo)){
-             return new ResponseEntity<>(HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<?> post(@RequestBody TipoVehiculoModel nuevoTipoVehiculo) {
+       
+       nuevoTipoVehiculo = tipovehiculoRepository.save(nuevoTipoVehiculo);
+       Optional<TipoVehiculoModel> cOptional = tipovehiculoRepository.findById(nuevoTipoVehiculo.getIdTipoVehiculo());
+        if (cOptional.isPresent()){
+            TipoVehiculoModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
         }else{
-             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
        
     }
     
-   @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        TipoVehiculoModel tipo = new TipoVehiculoModel();
-        if (tipo.eliminarTipo(Integer.parseInt(id))){
-        return new ResponseEntity<>(HttpStatus.OK);
-    }else{
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        Optional<TipoVehiculoModel> cOptional = tipovehiculoRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            TipoVehiculoModel cEncontrado = cOptional.get();
+            
+            tipovehiculoRepository.deleteById(cEncontrado.getIdTipoVehiculo());
+            
+            return new ResponseEntity<>(cEncontrado, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         
     }
     
 }
+    
+

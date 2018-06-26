@@ -1,16 +1,21 @@
 
 package inacap.webcomponent.proyecto2only.model;
 
-import java.util.ArrayList;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
-
+@Entity
+@Table(name = "tipopersonas")
 public class TipoPersonaModel {
-    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idPersona;
     private String nombreTipoPersona;
     private String detalle;
     
-    public static ArrayList<TipoPersonaModel> tipopersonas = new ArrayList<>();
 
     public int getIdPersona() {
         return idPersona;
@@ -48,56 +53,5 @@ public class TipoPersonaModel {
         this.idPersona = idPersona;
         this.nombreTipoPersona = nombreTipoPersona;
         this.detalle = detalle;
-    }
-    public boolean nuevoTipoPersona(TipoPersonaModel nuevoTipoPersona){
-        int id = 0;
-        if(!tipopersonas.isEmpty()){
-            for (TipoPersonaModel tipopersona: tipopersonas ){
-                if (tipopersona.getIdPersona()> id){
-                    id = tipopersona.getIdPersona();
-                }
-            }
-        }
-        id++;
-        tipopersonas.add(new TipoPersonaModel(id,nuevoTipoPersona.getNombreTipoPersona(),nuevoTipoPersona.getDetalle() ));
-        return true;
-    }
-    public TipoPersonaModel buscaTipoPersona(int idTipoPersonaBuscado){
-        TipoPersonaModel tipoPersonaEncontrado = null;
-        if(!tipopersonas.isEmpty()){
-            for (TipoPersonaModel tipopersona : tipopersonas){
-                if(tipopersona.getIdPersona()== idTipoPersonaBuscado){
-                   tipoPersonaEncontrado = tipopersona; 
-                }
-            }
-        }
-        return tipoPersonaEncontrado;
-    }
-    public TipoPersonaModel editarTipoPersona(int idTipoPersona, TipoPersonaModel tipoPersonaEditar){
-         TipoPersonaModel tipoPersonEditado = null;
-        if(!tipopersonas.isEmpty()){
-            for (TipoPersonaModel tipopersona : tipopersonas){
-                if(tipopersona.getIdPersona()== idTipoPersona){
-                   tipopersona.setNombreTipoPersona(tipoPersonaEditar.getNombreTipoPersona());
-                   tipopersona.setDetalle(tipoPersonaEditar.getDetalle());
-                   tipoPersonEditado = tipopersona;
-                }
-            }
-        }
-        return tipoPersonEditado;
-    }
-    public boolean eliminarTipoPersona(int id){
-      TipoPersonaModel tipoPersonaEliminado = null;
-        if(!tipopersonas.isEmpty()){
-            for (TipoPersonaModel tipopersona : tipopersonas){
-                if(tipopersona.getIdPersona()== idPersona){
-                   tipoPersonaEliminado = tipopersona;
-                }
-            }
-        }  
-        
-        tipopersonas.remove(tipoPersonaEliminado);
-        
-        return true;
     }
 }

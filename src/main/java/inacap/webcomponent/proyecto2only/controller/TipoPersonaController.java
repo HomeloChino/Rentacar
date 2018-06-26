@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import inacap.webcomponent.proyecto2only.model.TipoPersonaModel;
 import org.springframework.http.HttpStatus;
+import inacap.webcomponent.proyecto2only.repository.TipoPersonaRepository;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -26,41 +29,63 @@ import org.springframework.http.HttpStatus;
 @RequestMapping("/tipopersona")
 public class TipoPersonaController {
     
+    @Autowired
+    private TipoPersonaRepository tipopersonaRepository;
+    
     @GetMapping()
-    public List<TipoPersonaModel> list() {
-        return TipoPersonaModel.tipopersonas;
+    public Iterable<TipoPersonaModel> list() {
+        return tipopersonaRepository.findAll();
     }
     
     @GetMapping("/{id}")
-    public TipoPersonaModel get(@PathVariable String id) {
-        TipoPersonaModel tipopersona = new TipoPersonaModel();
-        return tipopersona.buscaTipoPersona(Integer.parseInt(id));
+    public ResponseEntity<TipoPersonaModel> get(@PathVariable String id) {
+        Optional<TipoPersonaModel> cOptional = tipopersonaRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            TipoPersonaModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
     }
     
-     @PutMapping("/{id}")
-    public ResponseEntity<TipoPersonaModel> put(@PathVariable String id, @RequestBody TipoPersonaModel tipoPersonaEditar) {
-        TipoPersonaModel tipopersona = new TipoPersonaModel();
-        return new ResponseEntity<>(tipopersona.editarTipoPersona(Integer.parseInt(id), tipoPersonaEditar), HttpStatus.OK);
+    @PutMapping("/{id}")
+    public ResponseEntity<TipoPersonaModel> put(@PathVariable String id, @RequestBody TipoPersonaModel tipopersonaEditar) {
+         Optional<TipoPersonaModel> cOptional = tipopersonaRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            TipoPersonaModel cEncontrado = cOptional.get();
+            tipopersonaEditar.setIdPersona(cEncontrado.getIdPersona());
+            tipopersonaRepository.save(tipopersonaEditar);
+            return new ResponseEntity<>(tipopersonaEditar, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+        }
     }
     
     @PostMapping
     public ResponseEntity<?> post(@RequestBody TipoPersonaModel nuevoTipoPersona) {
-        TipoPersonaModel tipopersona = new TipoPersonaModel();
-        if (tipopersona.nuevoTipoPersona(nuevoTipoPersona)){
-             return new ResponseEntity<>(HttpStatus.CREATED);
+       
+       nuevoTipoPersona = tipopersonaRepository.save(nuevoTipoPersona);
+       Optional<TipoPersonaModel> cOptional = tipopersonaRepository.findById(nuevoTipoPersona.getIdPersona());
+        if (cOptional.isPresent()){
+            TipoPersonaModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
         }else{
-             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
        
     }
     
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        TipoPersonaModel tipopersona = new TipoPersonaModel();
-        if (tipopersona.eliminarTipoPersona(Integer.parseInt(id))){
-        return new ResponseEntity<>(HttpStatus.OK);
-    }else{
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        Optional<TipoPersonaModel> cOptional = tipopersonaRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            TipoPersonaModel cEncontrado = cOptional.get();
+            
+            tipopersonaRepository.deleteById(cEncontrado.getIdPersona());
+            
+            return new ResponseEntity<>(cEncontrado, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         
     }

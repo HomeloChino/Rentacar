@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import inacap.webcomponent.proyecto2only.model.TransmisionModel;
 import org.springframework.http.HttpStatus;
+import inacap.webcomponent.proyecto2only.repository.TransmisionRepository;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -26,41 +29,63 @@ import org.springframework.http.HttpStatus;
 @RequestMapping("/transmision")
 public class TransmisionController {
     
-     @GetMapping()
-    public List<TransmisionModel> list() {
-        return TransmisionModel.transmisiones;
+    @Autowired
+    private TransmisionRepository transmisionRepository;
+    
+    @GetMapping()
+    public Iterable<TransmisionModel> list() {
+        return transmisionRepository.findAll();
     }
     
-     @GetMapping("/{id}")
-    public TransmisionModel get(@PathVariable String id) {
-        TransmisionModel transmision = new TransmisionModel();
-        return transmision.buscaTransmision(Integer.parseInt(id));
+    @GetMapping("/{id}")
+    public ResponseEntity<TransmisionModel> get(@PathVariable String id) {
+        Optional<TransmisionModel> cOptional = transmisionRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            TransmisionModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
     }
     
-     @PutMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<TransmisionModel> put(@PathVariable String id, @RequestBody TransmisionModel transmisionEditar) {
-        TransmisionModel transmision = new TransmisionModel();
-        return new ResponseEntity<>(transmision.editarTransmision(Integer.parseInt(id), transmisionEditar), HttpStatus.OK);
+         Optional<TransmisionModel> cOptional = transmisionRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            TransmisionModel cEncontrado = cOptional.get();
+            transmisionEditar.setIdTransmision(cEncontrado.getIdTransmision());
+            transmisionRepository.save(transmisionEditar);
+            return new ResponseEntity<>(transmisionEditar, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+        }
     }
     
    @PostMapping
     public ResponseEntity<?> post(@RequestBody TransmisionModel nuevaTransmision) {
-        TransmisionModel transmision = new TransmisionModel();
-        if (transmision.nuevaTransmision(nuevaTransmision)){
-             return new ResponseEntity<>(HttpStatus.CREATED);
+       
+       nuevaTransmision = transmisionRepository.save(nuevaTransmision);
+       Optional<TransmisionModel> cOptional = transmisionRepository.findById(nuevaTransmision.getIdTransmision());
+        if (cOptional.isPresent()){
+            TransmisionModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
         }else{
-             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
        
     }
     
-     @DeleteMapping("/{id}")
+   @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        TransmisionModel transmision = new TransmisionModel();
-        if (transmision.eliminarTransmision(Integer.parseInt(id))){
-        return new ResponseEntity<>(HttpStatus.OK);
-    }else{
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        Optional<TransmisionModel> cOptional = transmisionRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            TransmisionModel cEncontrado = cOptional.get();
+            
+            transmisionRepository.deleteById(cEncontrado.getIdTransmision());
+            
+            return new ResponseEntity<>(cEncontrado, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         
     }

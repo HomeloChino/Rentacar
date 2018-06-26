@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import inacap.webcomponent.proyecto2only.model.MedioPagoModel;
 import org.springframework.http.HttpStatus;
+import inacap.webcomponent.proyecto2only.repository.MedioPagoRepository;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -26,41 +29,63 @@ import org.springframework.http.HttpStatus;
 @RequestMapping("/pago")
 public class MedioPagoController {
     
+   @Autowired
+    private MedioPagoRepository mediopagoRepository;
+   
    @GetMapping()
-    public List<MedioPagoModel> list() {
-        return MedioPagoModel.pagos;
+    public Iterable<MedioPagoModel> list() {
+        return mediopagoRepository.findAll();
     }
     
-      @GetMapping("/{id}")
-    public MedioPagoModel get(@PathVariable String id) {
-        MedioPagoModel pago = new MedioPagoModel();
-        return pago.buscaPago(Integer.parseInt(id));
+    @GetMapping("/{id}")
+    public ResponseEntity<MedioPagoModel> get(@PathVariable String id) {
+        Optional<MedioPagoModel> cOptional = mediopagoRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            MedioPagoModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
     }
     
-    @PutMapping("/{id}")
-    public ResponseEntity<MedioPagoModel> put(@PathVariable String id, @RequestBody MedioPagoModel pagoEditar) {
-        MedioPagoModel pago = new MedioPagoModel();
-        return new ResponseEntity<>(pago.editarPago(Integer.parseInt(id), pagoEditar), HttpStatus.OK);
+     @PutMapping("/{id}")
+    public ResponseEntity<MedioPagoModel> put(@PathVariable String id, @RequestBody MedioPagoModel mediopagoEditar) {
+         Optional<MedioPagoModel> cOptional = mediopagoRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            MedioPagoModel cEncontrado = cOptional.get();
+            mediopagoEditar.setIdMedioPago(cEncontrado.getIdMedioPago());
+            mediopagoRepository.save(mediopagoEditar);
+            return new ResponseEntity<>(mediopagoEditar, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+        }
     }
     
      @PostMapping
-    public ResponseEntity<?> post(@RequestBody MedioPagoModel nuevoPago) {
-         MedioPagoModel pago = new MedioPagoModel();
-        if (pago.nuevoPago(nuevoPago)){
-             return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<?> post(@RequestBody MedioPagoModel nuevoMedioPago) {
+       
+       nuevoMedioPago = mediopagoRepository.save(nuevoMedioPago);
+       Optional<MedioPagoModel> cOptional = mediopagoRepository.findById(nuevoMedioPago.getIdMedioPago());
+        if (cOptional.isPresent()){
+            MedioPagoModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
         }else{
-             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
        
     }
     
    @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        MedioPagoModel pago = new MedioPagoModel();
-        if (pago.eliminarPago(Integer.parseInt(id))){
-        return new ResponseEntity<>(HttpStatus.OK);
-    }else{
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        Optional<MedioPagoModel> cOptional = mediopagoRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            MedioPagoModel cEncontrado = cOptional.get();
+            
+            mediopagoRepository.deleteById(cEncontrado.getIdMedioPago());
+            
+            return new ResponseEntity<>(cEncontrado, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         
     }

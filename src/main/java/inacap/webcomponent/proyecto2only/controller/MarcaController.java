@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import inacap.webcomponent.proyecto2only.model.MarcaModel;
 import org.springframework.http.HttpStatus;
+import inacap.webcomponent.proyecto2only.repository.MarcaRepository;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -26,41 +29,63 @@ import org.springframework.http.HttpStatus;
 @RequestMapping("/marca")
 public class MarcaController {
     
+    @Autowired
+    private MarcaRepository marcaRepository;
+    
     @GetMapping()
-    public List<MarcaModel> list() {
-        return MarcaModel.marcas;
+    public Iterable<MarcaModel> list() {
+        return marcaRepository.findAll();
     }
     
-       @GetMapping("/{id}")
-    public MarcaModel get(@PathVariable String id) {
-        MarcaModel marca = new MarcaModel();
-        return marca.buscaMarca(Integer.parseInt(id));
+     @GetMapping("/{id}")
+    public ResponseEntity<MarcaModel> get(@PathVariable String id) {
+        Optional<MarcaModel> cOptional = marcaRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            MarcaModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
     }
     
    @PutMapping("/{id}")
     public ResponseEntity<MarcaModel> put(@PathVariable String id, @RequestBody MarcaModel marcaEditar) {
-        MarcaModel marca = new MarcaModel();
-        return new ResponseEntity<>(marca.editarMarca(Integer.parseInt(id), marcaEditar), HttpStatus.OK);
+         Optional<MarcaModel> cOptional = marcaRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            MarcaModel cEncontrado = cOptional.get();
+            marcaEditar.setIdMarca(cEncontrado.getIdMarca());
+            marcaRepository.save(marcaEditar);
+            return new ResponseEntity<>(marcaEditar, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+        }
     }
     
-    @PostMapping
+     @PostMapping
     public ResponseEntity<?> post(@RequestBody MarcaModel nuevaMarca) {
-        MarcaModel marca = new MarcaModel();
-        if (marca.nuevaMarca(nuevaMarca)){
-             return new ResponseEntity<>(HttpStatus.CREATED);
+       
+       nuevaMarca = marcaRepository.save(nuevaMarca);
+       Optional<MarcaModel> cOptional = marcaRepository.findById(nuevaMarca.getIdMarca());
+        if (cOptional.isPresent()){
+            MarcaModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
         }else{
-             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
        
     }
     
-     @DeleteMapping("/{id}")
+   @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        MarcaModel marca = new MarcaModel();
-        if (marca.eliminarMarca(Integer.parseInt(id))){
-        return new ResponseEntity<>(HttpStatus.OK);
-    }else{
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        Optional<MarcaModel> cOptional = marcaRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            MarcaModel cEncontrado = cOptional.get();
+            
+            marcaRepository.deleteById(cEncontrado.getIdMarca());
+            
+            return new ResponseEntity<>(cEncontrado, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         
     }

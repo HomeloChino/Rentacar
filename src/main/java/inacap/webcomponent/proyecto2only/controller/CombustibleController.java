@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Chinasti
  */
 @RestController
-@RequestMapping("/combustible")
+@RequestMapping("/combustibles")
 public class CombustibleController {
     
     @Autowired
