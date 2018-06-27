@@ -12,17 +12,16 @@ import javax.persistence.Table;
 public class TipoPersonaModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idPersona;
+    private int idTipoPersona;
     private String nombreTipoPersona;
     private String detalle;
-    
 
-    public int getIdPersona() {
-        return idPersona;
+    public int getIdTipoPersona() {
+        return idTipoPersona;
     }
 
-    public void setIdPersona(int idPersona) {
-        this.idPersona = idPersona;
+    public void setIdTipoPersona(int idTipoPersona) {
+        this.idTipoPersona = idTipoPersona;
     }
 
     public String getNombreTipoPersona() {
@@ -49,9 +48,11 @@ public class TipoPersonaModel {
         this.detalle = detalle;
     }
 
-    private TipoPersonaModel(int idPersona, String nombreTipoPersona, String detalle) {
-        this.idPersona = idPersona;
+    private TipoPersonaModel(int idTipoPersona, String nombreTipoPersona, String detalle) {
+        this.idTipoPersona = idTipoPersona;
         this.nombreTipoPersona = nombreTipoPersona;
         this.detalle = detalle;
     }
+
+    
 }

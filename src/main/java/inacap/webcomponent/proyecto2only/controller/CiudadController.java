@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import inacap.webcomponent.proyecto2only.model.CiudadModel;
 import org.springframework.http.HttpStatus;
+import inacap.webcomponent.proyecto2only.repository.CiudadRepository;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -26,41 +29,63 @@ import org.springframework.http.HttpStatus;
 @RequestMapping("/ciudad")
 public class CiudadController {
     
+    @Autowired
+    private CiudadRepository ciudadRepository;
+    
     @GetMapping()
-    public List<CiudadModel> list() {
-        return CiudadModel.ciudades;
+    public Iterable<CiudadModel> list() {
+        return ciudadRepository.findAll();
     }
     
-    @GetMapping("/{id}")
-    public CiudadModel get(@PathVariable String id) {
-        CiudadModel ciudad = new CiudadModel();
-        return ciudad.buscaCiudad(Integer.parseInt(id));
+   @GetMapping("/{id}")
+    public ResponseEntity<CiudadModel> get(@PathVariable String id) {
+        Optional<CiudadModel> cOptional = ciudadRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            CiudadModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
     }
     
     @PutMapping("/{id}")
     public ResponseEntity<CiudadModel> put(@PathVariable String id, @RequestBody CiudadModel ciudadEditar) {
-        CiudadModel ciudad = new CiudadModel();
-        return new ResponseEntity<>(ciudad.editarCiudad(Integer.parseInt(id), ciudadEditar), HttpStatus.OK);
+         Optional<CiudadModel> cOptional = ciudadRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            CiudadModel cEncontrado = cOptional.get();
+            ciudadEditar.setIdCiudad(cEncontrado.getIdCiudad());
+            ciudadRepository.save(ciudadEditar);
+            return new ResponseEntity<>(ciudadEditar, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+        }
     }
     
     @PostMapping
     public ResponseEntity<?> post(@RequestBody CiudadModel nuevaCiudad) {
-        CiudadModel ciudad = new CiudadModel();
-        if (ciudad.nuevaCiudad(nuevaCiudad)){
-             return new ResponseEntity<>(HttpStatus.CREATED);
+       
+       nuevaCiudad = ciudadRepository.save(nuevaCiudad);
+       Optional<CiudadModel> cOptional = ciudadRepository.findById(nuevaCiudad.getIdCiudad());
+        if (cOptional.isPresent()){
+            CiudadModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
         }else{
-             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
        
     }
     
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        CiudadModel ciudad = new CiudadModel();
-        if (ciudad.eliminarCiudad(Integer.parseInt(id))){
-        return new ResponseEntity<>(HttpStatus.OK);
-    }else{
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        Optional<CiudadModel> cOptional = ciudadRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            CiudadModel cEncontrado = cOptional.get();
+            
+            ciudadRepository.deleteById(cEncontrado.getIdCiudad());
+            
+            return new ResponseEntity<>(cEncontrado, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         
     }

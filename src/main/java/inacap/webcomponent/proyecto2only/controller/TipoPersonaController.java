@@ -53,7 +53,7 @@ public class TipoPersonaController {
          Optional<TipoPersonaModel> cOptional = tipopersonaRepository.findById(Integer.parseInt(id));
         if (cOptional.isPresent()){
             TipoPersonaModel cEncontrado = cOptional.get();
-            tipopersonaEditar.setIdPersona(cEncontrado.getIdPersona());
+            tipopersonaEditar.setIdTipoPersona(cEncontrado.getIdTipoPersona());
             tipopersonaRepository.save(tipopersonaEditar);
             return new ResponseEntity<>(tipopersonaEditar, HttpStatus.OK);
         }else{
@@ -65,7 +65,7 @@ public class TipoPersonaController {
     public ResponseEntity<?> post(@RequestBody TipoPersonaModel nuevoTipoPersona) {
        
        nuevoTipoPersona = tipopersonaRepository.save(nuevoTipoPersona);
-       Optional<TipoPersonaModel> cOptional = tipopersonaRepository.findById(nuevoTipoPersona.getIdPersona());
+       Optional<TipoPersonaModel> cOptional = tipopersonaRepository.findById(nuevoTipoPersona.getIdTipoPersona());
         if (cOptional.isPresent()){
             TipoPersonaModel cEncontrado = cOptional.get();
             return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
@@ -81,7 +81,7 @@ public class TipoPersonaController {
         if (cOptional.isPresent()){
             TipoPersonaModel cEncontrado = cOptional.get();
             
-            tipopersonaRepository.deleteById(cEncontrado.getIdPersona());
+            tipopersonaRepository.deleteById(cEncontrado.getIdTipoPersona());
             
             return new ResponseEntity<>(cEncontrado, HttpStatus.OK);
         }else{
