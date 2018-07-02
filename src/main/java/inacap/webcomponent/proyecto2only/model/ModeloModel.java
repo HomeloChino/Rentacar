@@ -1,17 +1,25 @@
-
 package inacap.webcomponent.proyecto2only.model;
 
-import java.util.ArrayList;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
-
+@Entity
+@Table(name = "modelos")
 public class ModeloModel {
-    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idModelo;
     private String nombreModelo;
     private String detalle;
-    private MarcaModel marca;
     
-    public static ArrayList<ModeloModel> modelos = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "id_marca")
+    private MarcaModel marca;
 
     public int getIdModelo() {
         return idModelo;
@@ -59,61 +67,5 @@ public class ModeloModel {
         this.nombreModelo = nombreModelo;
         this.detalle = detalle;
         this.marca = marca;
-    }
-    
-    public boolean nuevoModelo(ModeloModel nuevoModelo){
-        int id = 0;
-        if(!modelos.isEmpty()){
-            for (ModeloModel modelo: modelos ){
-                if (modelo.getIdModelo()> id){
-                    id = modelo.getIdModelo();
-                }
-            }
-        }
-        id++;
-        modelos.add(new ModeloModel(id,nuevoModelo.getNombreModelo(),nuevoModelo.getDetalle(),nuevoModelo.marca ));
-        return true;
-    }
-    
-     public ModeloModel buscaModelo(int idModeloBuscado){
-        ModeloModel modeloEncontrado = null;
-        if(!modelos.isEmpty()){
-            for (ModeloModel modelo : modelos){
-                if(modelo.getIdModelo()== idModeloBuscado){
-                   modeloEncontrado = modelo; 
-                }
-            }
-        }
-        return modeloEncontrado;
-    }
-     
-      public ModeloModel editarModelo(int idModelo, ModeloModel modeloEditar){
-         ModeloModel modeloEditado = null;
-        if(!modelos.isEmpty()){
-            for (ModeloModel modelo : modelos){
-                if(modelo.getIdModelo()== idModelo){
-                   modelo.setNombreModelo(modeloEditar.getNombreModelo());
-                   modelo.setDetalle(modeloEditar.getDetalle());
-                   modelo.setMarca(modeloEditar.getMarca());
-                   modeloEditado = modelo;
-                }
-            }
-        }
-        return modeloEditado;
-    }
-      
-      public boolean eliminarModelo(int id){
-      ModeloModel modeloEliminado = null;
-        if(!modelos.isEmpty()){
-            for (ModeloModel modelo : modelos){
-                if(modelo.getIdModelo()== idModelo){
-                   modeloEliminado = modelo;
-                }
-            }
-        }  
-        
-        modelos.remove(modeloEliminado);
-        
-        return true;
     }
 }

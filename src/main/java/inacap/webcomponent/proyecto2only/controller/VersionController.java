@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import inacap.webcomponent.proyecto2only.model.VersionModel;
 import org.springframework.http.HttpStatus;
+import inacap.webcomponent.proyecto2only.repository.VersionRepository;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -26,41 +29,63 @@ import org.springframework.http.HttpStatus;
 @RequestMapping("/version")
 public class VersionController {
     
+    @Autowired
+    private VersionRepository versionRepository;
+    
     @GetMapping()
-    public List<VersionModel> list() {
-        return VersionModel.versiones;
+    public Iterable<VersionModel> list() {
+        return versionRepository.findAll();
     }
     
     @GetMapping("/{id}")
-    public VersionModel get(@PathVariable String id) {
-        VersionModel version = new VersionModel();
-        return version.buscaVersion(Integer.parseInt(id));
-    }
-    
-    @PutMapping("/{id}")
-    public ResponseEntity<VersionModel> put(@PathVariable String id, @RequestBody VersionModel versionEditar) {
-        VersionModel version = new VersionModel();
-        return new ResponseEntity<>(version.editarVersion(Integer.parseInt(id), versionEditar), HttpStatus.OK);
-    }
-    
-    @PostMapping
-    public ResponseEntity<?> post(@RequestBody VersionModel nuevaVersion) {
-        VersionModel version = new VersionModel();
-        if (version.nuevaVersion(nuevaVersion)){
-             return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<VersionModel> get(@PathVariable String id) {
+        Optional<VersionModel> cOptional = versionRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            VersionModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
         }else{
-             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+    
+     @PutMapping("/{id}")
+    public ResponseEntity<VersionModel> put(@PathVariable String id, @RequestBody VersionModel versionEditar) {
+         Optional<VersionModel> cOptional = versionRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            VersionModel cEncontrado = cOptional.get();
+            versionEditar.setIdVersion(cEncontrado.getIdVersion());
+            versionRepository.save(versionEditar);
+            return new ResponseEntity<>(versionEditar, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+        }
+    }
+    
+     @PostMapping
+    public ResponseEntity<?> post(@RequestBody VersionModel nuevaVersion) {
+       
+       nuevaVersion = versionRepository.save(nuevaVersion);
+       Optional<VersionModel> cOptional = versionRepository.findById(nuevaVersion.getIdVersion());
+        if (cOptional.isPresent()){
+            VersionModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
        
     }
     
-    @DeleteMapping("/{id}")
+     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        VersionModel version = new VersionModel();
-        if (version.eliminarVersion(Integer.parseInt(id))){
-        return new ResponseEntity<>(HttpStatus.OK);
-    }else{
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        Optional<VersionModel> cOptional = versionRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            VersionModel cEncontrado = cOptional.get();
+            
+            versionRepository.deleteById(cEncontrado.getIdVersion());
+            
+            return new ResponseEntity<>(cEncontrado, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         
     }

@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import inacap.webcomponent.proyecto2only.model.ModeloModel;
 import org.springframework.http.HttpStatus;
+import inacap.webcomponent.proyecto2only.repository.ModeloRepository;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -26,41 +29,63 @@ import org.springframework.http.HttpStatus;
 @RequestMapping("/modelo")
 public class ModeloController {
     
+    @Autowired
+    private ModeloRepository modeloRepository;
+    
    @GetMapping()
-    public List<ModeloModel> list() {
-        return ModeloModel.modelos;
+    public Iterable<ModeloModel> list() {
+        return modeloRepository.findAll();
     }
     
-   @GetMapping("/{id}")
-    public ModeloModel get(@PathVariable String id) {
-        ModeloModel modelo = new ModeloModel();
-        return modelo.buscaModelo(Integer.parseInt(id));
+  @GetMapping("/{id}")
+    public ResponseEntity<ModeloModel> get(@PathVariable String id) {
+        Optional<ModeloModel> cOptional = modeloRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            ModeloModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
     }
     
    @PutMapping("/{id}")
     public ResponseEntity<ModeloModel> put(@PathVariable String id, @RequestBody ModeloModel modeloEditar) {
-        ModeloModel modelo = new ModeloModel();
-        return new ResponseEntity<>(modelo.editarModelo(Integer.parseInt(id), modeloEditar), HttpStatus.OK);
+         Optional<ModeloModel> cOptional = modeloRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            ModeloModel cEncontrado = cOptional.get();
+            modeloEditar.setIdModelo(cEncontrado.getIdModelo());
+            modeloRepository.save(modeloEditar);
+            return new ResponseEntity<>(modeloEditar, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+        }
     }
     
-     @PostMapping
+    @PostMapping
     public ResponseEntity<?> post(@RequestBody ModeloModel nuevoModelo) {
-        ModeloModel modelo = new ModeloModel();
-        if (modelo.nuevoModelo(nuevoModelo)){
-             return new ResponseEntity<>(HttpStatus.CREATED);
+       
+       nuevoModelo = modeloRepository.save(nuevoModelo);
+       Optional<ModeloModel> cOptional = modeloRepository.findById(nuevoModelo.getIdModelo());
+        if (cOptional.isPresent()){
+            ModeloModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
         }else{
-             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
        
     }
     
      @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        ModeloModel modelo = new ModeloModel();
-        if (modelo.eliminarModelo(Integer.parseInt(id))){
-        return new ResponseEntity<>(HttpStatus.OK);
-    }else{
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        Optional<ModeloModel> cOptional = modeloRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            ModeloModel cEncontrado = cOptional.get();
+            
+            modeloRepository.deleteById(cEncontrado.getIdModelo());
+            
+            return new ResponseEntity<>(cEncontrado, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         
     }
