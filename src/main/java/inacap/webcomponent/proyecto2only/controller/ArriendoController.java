@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import inacap.webcomponent.proyecto2only.model.ArriendoModel;
 import org.springframework.http.HttpStatus;
+import inacap.webcomponent.proyecto2only.repository.ArriendoRepository;
+import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -26,41 +29,63 @@ import org.springframework.http.HttpStatus;
 @RequestMapping("/arriendo")
 public class ArriendoController {
     
+    @Autowired
+    private ArriendoRepository arriendoRepository;
+    
     @GetMapping()
-    public List<ArriendoModel> list() {
-        return ArriendoModel.arriendos;
+    public Iterable<ArriendoModel> list() {
+        return arriendoRepository.findAll();
     }
     
-    @GetMapping("/{id}")
-    public ArriendoModel get(@PathVariable String id) {
-        ArriendoModel arriendo = new ArriendoModel();
-        return arriendo.buscaArriendo(Integer.parseInt(id));
-    }
-    
-    @PutMapping("/{id}")
-    public ResponseEntity<ArriendoModel> put(@PathVariable String id, @RequestBody ArriendoModel arriendoEditar) {
-        ArriendoModel arriendo = new ArriendoModel();
-        return new ResponseEntity<>(arriendo.editarArriendo(Integer.parseInt(id), arriendoEditar), HttpStatus.OK);
-    }
-    
-    @PostMapping
-    public ResponseEntity<?> post(@RequestBody ArriendoModel nuevoArriendo) {
-        ArriendoModel arriendo = new ArriendoModel();
-        if (arriendo.nuevoArriendo(nuevoArriendo)){
-             return new ResponseEntity<>(HttpStatus.CREATED);
+     @GetMapping("/{id}")
+    public ResponseEntity<ArriendoModel> get(@PathVariable String id) {
+        Optional<ArriendoModel> cOptional = arriendoRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            ArriendoModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
         }else{
-             return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
+    }
+    
+   @PutMapping("/{id}")
+    public ResponseEntity<ArriendoModel> put(@PathVariable String id, @RequestBody ArriendoModel arriendoEditar) {
+         Optional<ArriendoModel> cOptional = arriendoRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            ArriendoModel cEncontrado = cOptional.get();
+            arriendoEditar.setIdArriendo(cEncontrado.getIdArriendo());
+            arriendoRepository.save(arriendoEditar);
+            return new ResponseEntity<>(arriendoEditar, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_MODIFIED);
+        }
+    }
+    
+   @PostMapping
+    public ResponseEntity<?> post(@RequestBody ArriendoModel nuevoArriendo) {
+       
+       nuevoArriendo = arriendoRepository.save(nuevoArriendo);
+       Optional<ArriendoModel> cOptional = arriendoRepository.findById(nuevoArriendo.getIdArriendo());
+        if (cOptional.isPresent()){
+            ArriendoModel cEncontrado = cOptional.get();
+            return new ResponseEntity<>(cEncontrado, HttpStatus.FOUND);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
        
     }
     
-    @DeleteMapping("/{id}")
+   @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        ArriendoModel arriendo = new ArriendoModel();
-        if (arriendo.eliminarArriendo(Integer.parseInt(id))){
-        return new ResponseEntity<>(HttpStatus.OK);
-    }else{
-            return new ResponseEntity<>(HttpStatus.EXPECTATION_FAILED);
+        Optional<ArriendoModel> cOptional = arriendoRepository.findById(Integer.parseInt(id));
+        if (cOptional.isPresent()){
+            ArriendoModel cEncontrado = cOptional.get();
+            
+            arriendoRepository.deleteById(cEncontrado.getIdArriendo());
+            
+            return new ResponseEntity<>(cEncontrado, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
         
     }
